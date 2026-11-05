@@ -1,35 +1,85 @@
 # Proyecto Backend - Node.js
 
-## Descripción
+## 1. Descripción
 
 API REST desarrollada con Node.js, Express y MongoDB para gestionar usuarios y publicaciones.
 
-El proyecto incluye autenticación mediante JWT, diferentes roles de usuario, operaciones CRUD y gestión de imágenes mediante Cloudinary.
+El proyecto permite registrar usuarios, iniciar sesión, gestionar publicaciones y subir imágenes a Cloudinary. Incluye autenticación mediante JWT, control de permisos y operaciones CRUD completas.
 
-## Tecnologías utilizadas
+## 2. Tecnologías utilizadas
 
 - Node.js
 - Express
 - MongoDB Atlas
 - Mongoose
-- JWT
+- JSON Web Token (JWT)
 - Bcryptjs
 - Multer
 - Cloudinary
 - Dotenv
-- CORS
+- Cors
 
-## Instalación
+## 3. Estructura del proyecto
 
-1. Clonar o descargar el proyecto.
-2. Instalar las dependencias:
+```text
+PROYECTO-BACKEND/
+│
+├── src/
+│   ├── config/
+│   │   └── cloudinary.js
+│   │
+│   ├── controllers/
+│   │   ├── postController.js
+│   │   └── userController.js
+│   │
+│   ├── middlewares/
+│   │   ├── adminMiddleware.js
+│   │   ├── authMiddleware.js
+│   │   └── uploadMiddleware.js
+│   │
+│   ├── models/
+│   │   ├── Post.js
+│   │   └── User.js
+│   │
+│   ├── routes/
+│   │   ├── postRoutes.js
+│   │   └── userRoutes.js
+│   │
+│   ├── seeds/
+│   │   └── postSeed.js
+│   │
+│   └── server.js
+│
+├── .env
+├── .gitignore
+├── package.json
+├── package-lock.json
+└── README.md
+```
+
+## 4. Instalación
+
+Clonar el repositorio:
+
+```bash
+git clone https://github.com/andreapv1999/proyecto-backend.git
+```
+
+Entrar en la carpeta del proyecto:
+
+```bash
+cd proyecto-backend
+```
+
+Instalar las dependencias:
 
 ```bash
 npm install
 ```
 
-3. Crear un archivo `.env` en la raíz del proyecto.
-4. Configurar las variables de entorno:
+## 5. Variables de entorno
+
+Crear un archivo `.env` en la raíz del proyecto y configurar las siguientes variables:
 
 ```env
 PORT=3000
@@ -40,7 +90,11 @@ CLOUDINARY_API_KEY=tu_api_key
 CLOUDINARY_API_SECRET=tu_api_secret
 ```
 
-## Ejecución
+Es necesario introducir las credenciales correspondientes de MongoDB Atlas y Cloudinary.
+
+**Importante:** el archivo `.env` contiene información privada y no debe subirse a GitHub.
+
+## 6. Ejecución del proyecto
 
 Iniciar el servidor:
 
@@ -48,112 +102,118 @@ Iniciar el servidor:
 npm start
 ```
 
-Ejecutar la semilla de datos:
+El servidor estará disponible en:
+
+```text
+http://localhost:3000
+```
+
+Ejecutar la semilla para insertar publicaciones de ejemplo:
 
 ```bash
 npm run seed
 ```
 
-## Modelos
+La semilla comprueba si ya existen publicaciones para evitar insertar duplicados.
+
+## 7. Modelos de datos
 
 ### User
 
-Gestiona los usuarios con nombre, correo electrónico, contraseña, rol y publicaciones relacionadas.
+El modelo User almacena la información de los usuarios:
+
+- Nombre.
+- Correo electrónico.
+- Contraseña cifrada.
+- Rol (user o admin).
+- Array de publicaciones relacionadas.
+
+La contraseña se almacena cifrada mediante Bcryptjs.
 
 ### Post
 
-Gestiona las publicaciones con título, contenido, autor e imagen.
+El modelo Post almacena la información de las publicaciones:
 
-Los modelos están relacionados mediante referencias de Mongoose.
+- Título.
+- Contenido.
+- Autor relacionado con User.
+- Imagen almacenada en Cloudinary.
+- Fecha de creación y actualización.
 
-## Endpoints
+Los modelos User y Post están relacionados mediante referencias de Mongoose.
+
+## 8. Endpoints de la API
 
 ### Usuarios
 
-| Método | Ruta | Descripción |
-|---|---|---|
-| POST | /users/register | Registrar usuario |
-| POST | /users/login | Iniciar sesión |
-| GET | /users | Obtener todos los usuarios (administrador) |
-| GET | /users/:id | Consultar un usuario |
-| PUT | /users/:id | Actualizar un usuario |
-| DELETE | /users/:id | Eliminar un usuario |
+| Método | Ruta | Descripción | Acceso |
+|---|---|---|---|
+| POST | `/users/register` | Registrar usuario | Público |
+| POST | `/users/login` | Iniciar sesión | Público |
+| GET | `/users` | Obtener todos los usuarios | Administrador |
+| GET | `/users/:id` | Obtener un usuario | Autenticado |
+| PUT | `/users/:id` | Actualizar un usuario | Propietario o administrador |
+| DELETE | `/users/:id` | Eliminar un usuario | Propietario o administrador |
 
 ### Publicaciones
 
-| Método | Ruta | Descripción |
-|---|---|---|
-| GET | /posts | Obtener todas las publicaciones |
-| GET | /posts/:id | Obtener una publicación |
-| POST | /posts | Crear una publicación |
-| PUT | /posts/:id | Actualizar una publicación |
-| DELETE | /posts/:id | Eliminar una publicación |
+| Método | Ruta | Descripción | Acceso |
+|---|---|---|---|
+| GET | `/posts` | Obtener todas las publicaciones | Público |
+| GET | `/posts/:id` | Obtener una publicación | Público |
+| POST | `/posts` | Crear una publicación | Autenticado |
+| PUT | `/posts/:id` | Actualizar una publicación | Autor o administrador |
+| DELETE | `/posts/:id` | Eliminar una publicación | Autor o administrador |
 
-Las operaciones protegidas requieren un token JWT en la cabecera Authorization con formato:
+## 9. Ejemplos de uso
 
-`Bearer token`
+### Registrar un usuario
 
-La creación y actualización de publicaciones permiten enviar imágenes mediante `multipart/form-data`.
-
-## Ejemplos de uso
-
-### Registrar usuario
-
-**POST /users/register**
+**POST** `/users/register`
 
 ```json
 {
-  "name": "Usuario Prueba",
-  "email": "usuario@email.com",
-  "password": "Prueba123"
+  "name": "Usuario de prueba",
+  "email": "usuario@example.com",
+  "password": "Password123"
 }
 ```
 
 ### Iniciar sesión
 
-**POST /users/login**
+**POST** `/users/login`
 
 ```json
 {
-  "email": "usuario@email.com",
-  "password": "Prueba123"
+  "email": "usuario@example.com",
+  "password": "Password123"
 }
 ```
 
-La respuesta devuelve un token JWT que debe utilizarse para acceder a las rutas protegidas.
+La respuesta devuelve un token JWT que permite acceder a las rutas protegidas.
 
-### Crear publicación
+### Crear una publicación
 
-**POST /posts**
+**POST** `/posts`
 
-Enviar los campos `title` y `content`, y opcionalmente una imagen con el campo `image`.
+La petición debe incluir:
 
-## Roles y permisos
+- Título.
+- Contenido.
+- Imagen opcional.
 
-- Los usuarios normales pueden gestionar sus propias publicaciones.
-- Los administradores pueden gestionar publicaciones de otros usuarios.
-- Los usuarios solo pueden consultar, modificar y eliminar su propia cuenta.
-- Los administradores pueden consultar y gestionar otros usuarios.
+La imagen se envía mediante `multipart/form-data`, utilizando el campo `image`.
 
-## Imágenes
+Para las rutas protegidas se debe incluir el token en la cabecera:
 
-Las imágenes se almacenan en Cloudinary.
+```text
+Authorization: Bearer TOKEN
+```
 
-Cuando se actualiza o elimina una publicación, también se gestiona la imagen asociada.
+## 10. Autenticación y permisos
 
-## Semilla
+La API utiliza JWT para autenticar a los usuarios.
 
-El proyecto incluye una semilla para insertar publicaciones de ejemplo evitando duplicados.
+Los permisos se organizan mediante dos roles:
 
-Las publicaciones se asocian a un usuario existente.
-
-## Seguridad
-
-- Las contraseñas se almacenan cifradas mediante bcryptjs.
-- La autenticación se realiza mediante JWT.
-- Las rutas protegidas verifican los permisos del usuario.
-- El archivo `.env` contiene información privada y no debe subirse a GitHub.
-
-## Autor
-
-Proyecto Backend desarrollado como práctica de aprendizaje de Node.js, Express y MongoDB.
+- **User:** puede gestionar su
